@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Password Strength Analyzer — Colorful Gradient</title>
+
+<style>
+/* ------------------------------
+   Fonts & base
+   ------------------------------ */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root{
+  --bg1: #ff6ec7;
+  --bg2: #6a82fb;
+  --bg3: #fc5c7d;
+  --bg4: #12c2e9;
+  --glass: rgba(255,255,255,0.12);
+  --accent: rgba(255,255,255,0.85);
+  --muted: rgba(255,255,255,0.7);
+  --danger: #ff4c4c;
+  --warn: #ffb347;
+  --good: #4fff6f;
+  --card-radius: 18px;
+  --width: 920px;
+}
+
+/* Gradient animated background with particles canvas behind everything */
+html,body{
+  height:100%;
+  margin:0;
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  background: linear-gradient(45deg,var(--bg1),var(--bg2),var(--bg3),var(--bg4));
+  background-size: 400% 400%;
+  animation: bgShift 12s ease infinite;
+  color:var(--accent);
+}
+
+/* background movement */
+@keyframes bgShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* center layout */
+.container{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  padding:40px 20px;
+  box-sizing:border-box;
+}
+
+/* particles canvas sits behind the UI */
+#particles {
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* main card */
+.card{
+  position:relative;
+  z-index:1;
+  width:var(--width);
+  max-width:98%;
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap:24px;
+  padding:26px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border-radius:var(--card-radius);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25), 0 0 40px rgba(0,0,0,0.08) inset;
+  border:1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px) saturate(120%);
+}
+
+/* header */
+.header{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.title{
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+.logo{
+  width:56px;
+  height:56px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  font-size:20px;
+  font-weight:700;
+  background:linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+.h1{
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:0.2px;
+}
+.h1 small{ display:block; font-size:12px; opacity:0.85; font-weight:400; margin-top:2px; }
+
+/* toolbar right */
+.toolbar{ display:flex; gap:10px; align-items:center; }
+
+/* theme toggle and icons */
+.toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background: rgba(255,255,255,0.03);
+  padding:8px;
+  border-radius:10px;
+  cursor:pointer;
+  user-select:none;
+  transition:transform 0.15s ease;
+}
+.toggle:active{ transform:translateY(1px) }
+
+/* main left area: input + rules + suggestions */
+.left{
+  padding:6px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* tip bubble rotates tips */
+.tip {
+  background: rgba(255,255,255,0.06);
+  border-left:4px solid rgba(255,255,255,0.12);
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* input row */
+.input-row{ position:relative; display:flex; gap:10px; align-items:center; }
+.input {
+  flex:1;
+  position:relative;
+}
+input[type="password"], input[type="text"]{
+  width:100%;
+  padding:14px 46px 14px 14px;
+  background: rgba(0,0,0,0.26);
+  border:1px solid rgba(255,255,255,0.04);
+  color:var(--accent);
+  border-radius:12px;
+  outline:none;
+  font-size:15px;
+  transition: box-shadow .12s ease, transform .08s ease;
+}
+input[type="password"]:focus, input[type="text"]:focus{
+  box-shadow:0 6px 22px rgba(0,0,0,0.35);
+  transform:translateY(-1px);
+}
+
+/* tooltip small */
+.tooltip {
+  position:absolute;
+  right:48px;
+  top:50%;
+  transform:translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color:var(--accent);
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* eye toggle and mini buttons */
+.icon-btn{
+  background:transparent;
+  border:none;
+  color:var(--accent);
+  cursor:pointer;
+  padding:8px;
+  border-radius:10px;
+  display:inline-grid;
+  place-items:center;
+  font-size:18px;
+}
+.icon-btn:hover{ transform:translateY(-2px) }
+
+/* action buttons */
+.actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.primary{
+  background: linear-gradient(90deg,#ffffff40,#ffffff12);
+  border:1px solid rgba(255,255,255,0.08);
+  padding:10px 14px;
+  border-radius:10px;
+  color:var(--accent);
+  cursor:pointer;
+  font-weight:600;
+  font-size:14px;
+}
+.ghost{
+  background:transparent;
+  border:1px dashed rgba(255,255,255,0.06);
+  padding:8px 12px;
+  border-radius:10px;
+  color:var(--accent);
+  cursor:pointer;
+}
+
+/* right column: circle meter + stats + history */
+.right{
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+/* circular meter */
+.circle-wrap{
+  width:220px;
+  height:220px;
+  position:relative;
+  display:grid;
+  place-items:center;
+}
+svg.progress{ transform: rotate(-90deg); width:220px; height:220px; }
+circle.bg{ fill:none; stroke: rgba(255,255,255,0.08); stroke-width:16; }
+circle.fg{ fill:none; stroke-width:16; stroke-linecap:round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease; }
+
+/* center text */
+.center-val{
+  position:absolute;
+  text-align:center;
+  transform: translateY(6px);
+}
+.center-val .num{ font-size:28px; font-weight:700; }
+.center-val .label{ font-size:13px; opacity:0.95; margin-top:6px; }
+
+/* emoji reaction */
+.emoji{ font-size:34px; margin-top:6px; }
+
+/* rules checklist */
+.rules{
+  width:100%;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.rule{
+  flex:1 1 45%;
+  min-width:140px;
+  background: rgba(255,255,255,0.03);
+  padding:8px 10px;
+  border-radius:10px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-size:13px;
+  border-left:3px solid rgba(255,255,255,0.03);
+}
+.rule.pass{ border-left-color: var(--good); color:var(--good); }
+.rule.fail{ border-left-color: rgba(255,255,255,0.06); color:var(--muted); }
+
+/* suggestions */
+.suggestions{
+  width:100%;
+}
+.suggestion-card{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:8px;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:13px;
+}
+.suggestion-urgent{ background: rgba(255,76,76,0.12); border-left:4px solid var(--danger); color:var(--danger); }
+.suggestion-improve{ background: rgba(255,179,71,0.10); border-left:4px solid var(--warn); color:var(--warn); }
+.suggestion-good{ background: rgba(79,255,111,0.08); border-left:4px solid var(--good); color:var(--good); }
+
+/* history */
+.history{
+  width:100%;
+  background: rgba(0,0,0,0.16);
+  border-radius:12px;
+  padding:10px;
+  font-size:13px;
+  max-height:200px;
+  overflow:auto;
+}
+.history-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  border-radius:10px;
+  margin-bottom:8px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.02);
+}
+.small{ font-size:12px; opacity:0.85; }
+
+/* shake animation for weak password */
+@keyframes shake {
+  0%{ transform:translateX(0) }
+  20%{ transform:translateX(-6px) }
+  40%{ transform:translateX(6px) }
+  60%{ transform:translateX(-4px) }
+  80%{ transform:translateX(4px) }
+  100%{ transform:translateX(0) }
+}
+.shake{
+  animation:shake 550ms ease;
+}
+
+/* responsive */
+@media (max-width:980px){
+  .card{ grid-template-columns: 1fr; padding:18px; gap:16px; }
+  .right{ align-items:center; }
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<div class="container">
+  <div class="card" role="main" aria-labelledby="appTitle">
+    <div class="header">
+      <div class="title">
+        <div class="logo">PS</div>
+        <div class="h1" id="appTitle">Password Strength Analyzer
+          <small>Colorful Gradient — Interactive Tips & Tools</small>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-hidden="false">
+        <div class="toggle" id="themeToggle" title="Toggle theme (auto)"><span id="themeIcon">🌈</span></div>
+        <button class="icon-btn" id="helpBtn" title="Help">❓</button>
+      </div>
+    </div>
+
+    <!-- LEFT COLUMN -->
+    <div class="left">
+
+      <!-- Tip bubble -->
+      <div class="tip" id="tipBox">💡 Tip: Use a mix of symbols, numbers, and uppercase letters — rotate tips automatically.</div>
+
+      <!-- Input and actions -->
+      <div class="input-row" id="inputRow">
+        <div class="input" style="flex:1;position:relative;">
+          <input id="password" type="password" aria-label="Password field" placeholder="Type your password or generate one">
+          <div class="tooltip" id="inputTooltip">Tip: Press generator to create a strong password</div>
+          <button class="icon-btn" id="toggleEye" title="Show/Hide password">👁️</button>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="generateBtn" title="Generate password">Generate</button>
+          <button class="ghost" id="copyBtn" title="Copy password">Copy</button>
+        </div>
+      </div>
+
+      <!-- Rules checklist -->
+      <div class="rules" id="rules">
+        <div class="rule fail" id="r-length">● Min 10 chars</div>
+        <div class="rule fail" id="r-upper">● Uppercase letter</div>
+        <div class="rule fail" id="r-lower">● Lowercase letter</div>
+        <div class="rule fail" id="r-number">● Number</div>
+        <div class="rule fail" id="r-symbol">● Symbol (!@#...)</div>
+        <div class="rule fail" id="r-unique">● Non-dictionary-ish</div>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="suggestions" id="suggestions">
+        <!-- filled by JS -->
+      </div>
+
+      <!-- Small controls: sound toggle & clear history -->
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button class="ghost" id="soundToggle">🔊 Sound: On</button>
+        <button class="ghost" id="clearHistory">🧹 Clear History</button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right">
+
+      <!-- Circular meter -->
+      <div class="circle-wrap" aria-hidden="false">
+        <svg class="progress" viewBox="0 0 220 220">
+          <circle class="bg" cx="110" cy="110" r="92"></circle>
+          <circle class="fg" id="fg" cx="110" cy="110" r="92" stroke="#00ff88" stroke-dasharray="578" stroke-dashoffset="578"></circle>
+        </svg>
+
+        <div class="center-val" id="centerVal">
+          <div class="num" id="scoreNum">0%</div>
+          <div class="label" id="scoreLabel">Strength</div>
+          <div class="emoji" id="bigEmoji">😶</div>
+        </div>
+      </div>
+
+      <!-- Stats + history -->
+      <div style="width:100%; display:flex; gap:12px; flex-direction:column;">
+        <div class="history" id="history" aria-live="polite">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================
+   Utilities & Initialization
+   ============================ */
+
+const passwordInput = document.getElementById('password');
+const toggleEye = document.getElementById('toggleEye');
+const generateBtn = document.getElementById('generateBtn');
+const copyBtn = document.getElementById('copyBtn');
+const suggestionsDiv = document.getElementById('suggestions');
+const rulesEls = {
+  length: document.getElementById('r-length'),
+  upper: document.getElementById('r-upper'),
+  lower: document.getElementById('r-lower'),
+  number: document.getElementById('r-number'),
+  symbol: document.getElementById('r-symbol'),
+  unique: document.getElementById('r-unique')
+};
+const fg = document.getElementById('fg');
+const scoreNum = document.getElementById('scoreNum');
+const scoreLabel = document.getElementById('scoreLabel');
+const bigEmoji = document.getElementById('bigEmoji');
+const tipBox = document.getElementById('tipBox');
+const historyDiv = document.getElementById('history');
+const soundToggle = document.getElementById('soundToggle');
+const clearHistoryBtn = document.getElementById('clearHistory');
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+const inputRow = document.getElementById('inputRow');
+const inputTooltip = document.getElementById('inputTooltip');
+const helpBtn = document.getElementById('helpBtn');
+let soundOn = true;
+
+/* WebAudio for simple tones */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function beep(freq = 440, duration = 0.12, type='sine', gain=0.08) {
+  if(!soundOn) return;
+  try{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = gain;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, duration*1000);
+  }catch(e){ /* ignore on suspend errors */ }
+}
+
+/* ---------------------------
+   Particles Background
+   --------------------------- */
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas(){
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function createParticles(n=80){
+  particles = [];
+  for(let i=0;i<n;i++){
+    particles.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      vx: (Math.random()-0.5)*0.4,
+      vy: (Math.random()-0.5)*0.6,
+      r: Math.random()*2 + 0.7,
+      a: Math.random()*0.6 + 0.15
+    });
+  }
+}
+createParticles(90);
+
+function drawParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(const p of particles){
+    p.x += p.vx;
+    p.y += p.vy;
+    if(p.x < -10) p.x = canvas.width+10;
+    if(p.x > canvas.width+10) p.x = -10;
+    if(p.y < -10) p.y = canvas.height+10;
+    if(p.y > canvas.height+10) p.y = -10;
+
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* ============================
+   Tips rotation
+   ============================ */
+const tips = [
+  "Use at least 12 characters for better safety.",
+  "Mix uppercase, lowercase, numbers and symbols.",
+  "Avoid common patterns and repeated sequences.",
+  "Use a unique password for every important account.",
+  "Passphrases (multiple random words) are easy & strong.",
+  "Consider a trusted password manager to store passwords."
+];
+let tipIdx = 0;
+function rotateTip(){
+  tipBox.style.opacity = 0;
+  setTimeout(()=> {
+    tipBox.textContent = "💡 " + tips[tipIdx];
+    tipBox.style.opacity = 1;
+    tipIdx = (tipIdx+1) % tips.length;
+  }, 240);
+}
+setInterval(rotateTip, 5000);
+rotateTip();
+
+/* ============================
+   Password generation
+   ============================ */
+function generatePassword(opts = {length: 14, useUpper:true, useLower:true, useNumbers:true, useSymbols:true}) {
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const nums = "0123456789";
+  const syms = "!@#$%^&*()_-+=[]{}|:;<>?,./";
+  let pool = "";
+  if(opts.useUpper) pool += upper;
+  if(opts.useLower) pool += lower;
+  if(opts.useNumbers) pool += nums;
+  if(opts.useSymbols) pool += syms;
+  if(!pool.length) pool = lower+nums;
+
+  // ensure at least one of each selected type
+  let pass = [];
+  if(opts.useUpper) pass.push(upper[Math.floor(Math.random()*upper.length)]);
+  if(opts.useLower) pass.push(lower[Math.floor(Math.random()*lower.length)]);
+  if(opts.useNumbers) pass.push(nums[Math.floor(Math.random()*nums.length)]);
+  if(opts.useSymbols) pass.push(syms[Math.floor(Math.random()*syms.length)]);
+
+  for(let i=pass.length;i<opts.length;i++){
+    pass.push(pool[Math.floor(Math.random()*pool.length)]);
+  }
+
+  // shuffle
+  for(let i=pass.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [pass[i],pass[j]] = [pass[j],pass[i]];
+  }
+  return pass.join('');
+}
+
+/* ============================
+   Local password analyzer
+   - Returns object: {score (0-100), strengthText, suggestions:[], rules:{...}}
+   ============================ */
+function analyzeLocal(pass) {
+  const suggestions = [];
+  const rules = {
+    length: pass.length >= 10,
+    upper: /[A-Z]/.test(pass),
+    lower: /[a-z]/.test(pass),
+    number: /[0-9]/.test(pass),
+    symbol: /[!@#$%^&*()_\-+=\[\]{}|:;<>?,./]/.test(pass),
+    unique: true
+  };
+
+  // Basic dictionary-ish check: short common words / numbers sequences
+  const lower = pass.toLowerCase();
+  const common = ["password","1234","qwerty","admin","letmein","welcome","iloveyou"];
+  for(const w of common) if(lower.includes(w) || pass.length < 4) rules.unique = false;
+
+  // Score calculation (weighted)
+  let score = 0;
+  score += rules.length ? 25 : Math.max(0, pass.length*2);
+  score += rules.upper ? 15 : 0;
+  score += rules.lower ? 15 : 0;
+  score += rules.number ? 18 : 0;
+  score += rules.symbol ? 18 : 0;
+  if(!rules.unique) score -= 20;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // Strength text
+  let strengthText = score >= 85 ? "Strong" : score >= 60 ? "Moderate" : "Weak";
+
+  // Suggestions generation
+  if(!rules.length) suggestions.push("Make it at least 10 characters (12+ recommended).");
+  if(!rules.upper) suggestions.push("Add uppercase letters (A-Z).");
+  if(!rules.lower) suggestions.push("Add lowercase letters (a-z).");
+  if(!rules.number) suggestions.push("Include numbers (0-9).");
+  if(!rules.symbol) suggestions.push("Include symbols like !@#$.");  
+  if(!rules.unique) suggestions.push("Avoid common words or sequences (e.g., 'password', '1234').");
+  if(score >= 90) suggestions.push("Excellent — consider storing it in a password manager.");
+
+  return { score, strengthText, suggestions, rules };
+}
+
+/* ============================
+   Visual updates based on analysis
+   ============================ */
+const circumference = 2*Math.PI*92;
+fg.style.strokeDasharray = circumference;
+fg.style.strokeDashoffset = circumference;
+
+function updateUIFromAnalysis(res, plainPass){
+  // res: {score, strengthText, suggestions, rules}
+  const score = res.score;
+  scoreNum.textContent = score + "%";
+  scoreLabel.textContent = res.strengthText;
+
+  // circle color
+  const color = score <= 40 ? 'var(--danger)' : (score <= 70 ? 'var(--warn)' : 'var(--good)');
+  fg.style.stroke = getComputedStyle(document.documentElement).getPropertyValue(color.replace('--','')) || color;
+  // set dashoffset
+  const offset = Math.max(0, circumference - (circumference * score / 100));
+  fg.style.strokeDashoffset = offset;
+
+  // emoji
+  let em = "😶";
+  if(score <= 40) em = "🥴";
+  else if(score <= 70) em = "😐";
+  else em = "😎";
+  bigEmoji.textContent = em;
+
+  // rules UI
+  rulesEls.length.className = 'rule ' + (res.rules.length ? 'pass' : 'fail'); rulesEls.length.textContent = (res.rules.length ? '✔ Min 10 chars' : '● Min 10 chars');
+  rulesEls.upper.className = 'rule ' + (res.rules.upper ? 'pass' : 'fail'); rulesEls.upper.textContent = (res.rules.upper ? '✔ Uppercase letter' : '● Uppercase letter');
+  rulesEls.lower.className = 'rule ' + (res.rules.lower ? 'pass' : 'fail'); rulesEls.lower.textContent = (res.rules.lower ? '✔ Lowercase letter' : '● Lowercase letter');
+  rulesEls.number.className = 'rule ' + (res.rules.number ? 'pass' : 'fail'); rulesEls.number.textContent = (res.rules.number ? '✔ Number' : '● Number');
+  rulesEls.symbol.className = 'rule ' + (res.rules.symbol ? 'pass' : 'fail'); rulesEls.symbol.textContent = (res.rules.symbol ? '✔ Symbol' : '● Symbol');
+  rulesEls.unique.className = 'rule ' + (res.rules.unique ? 'pass' : 'fail'); rulesEls.unique.textContent = (res.rules.unique ? '✔ Non-common' : '● Non-common');
+
+  // suggestions
+  suggestionsDiv.innerHTML = '';
+  res.suggestions.forEach(s => {
+    const type = s.toLowerCase().includes('avoid') || s.toLowerCase().includes('common') ? 'suggestion-urgent' :
+                 s.toLowerCase().includes('add') || s.toLowerCase().includes('make') ? 'suggestion-improve' : 'suggestion-good';
+    const el = document.createElement('div');
+    el.className = 'suggestion-card ' + type;
+    el.innerHTML = `<div style="font-size:18px;">${type.includes('urgent') ? '⚠️' : type.includes('improve') ? '⚡' : '✅'}</div>
+                    <div style="flex:1">${s}</div>`;
+    suggestionsDiv.appendChild(el);
+  });
+
+  // shake when weak
+  if(res.score <= 40){
+    inputRow.classList.add('shake');
+    setTimeout(()=> inputRow.classList.remove('shake'), 600);
+  }
+
+  // sound feedback (weak/moderate/strong)
+  if(soundOn){
+    if(res.score <= 40) { beep(200,0.12,'sawtooth',0.06); setTimeout(()=>beep(160,0.08,'sine',0.05),80); }
+    else if(res.score <= 70) { beep(520,0.12,'sine',0.06); }
+    else { beep(880,0.12,'sine',0.08); setTimeout(()=>beep(1320,0.08,'sine',0.06),90); }
+  }
+
+  // store to history if the user typed or generated password (non-empty)
+  if(typeof plainPass === 'string' && plainPass.length > 0){
+    addToHistory(plainPass, res.score, res.strengthText);
+  }
+}
+
+/* ============================
+   History management (localStorage)
+   ============================ */
+function loadHistory(){
+  try{
+    const h = JSON.parse(localStorage.getItem('ps_history')||'[]');
+    return Array.isArray(h)?h:[];
+  }catch(e){ return []; }
+}
+function saveHistory(h){
+  localStorage.setItem('ps_history', JSON.stringify(h.slice(0,50)));
+}
+function addToHistory(pass, score, label){
+  if(!pass) return;
+  // keep last 5 unique entries
+  const h = loadHistory().filter(x => x.pass !== pass);
+  h.unshift({pass, score, label, time: Date.now()});
+  saveHistory(h.slice(0,50));
+  renderHistory();
+}
+function clearHistory(){
+  localStorage.removeItem('ps_history');
+  renderHistory();
+}
+function renderHistory(){
+  const h = loadHistory().slice(0,5);
+  historyDiv.innerHTML = '';
+  if(h.length === 0){
+    historyDiv.innerHTML = `<div style="opacity:0.9; text-align:center; padding:18px;">No history yet — try generating or typing a password.</div>`;
+    return;
+  }
+  for(const item of h){
+    const el = document.createElement('div');
+    el.className = 'history-card';
+    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center;"><div style="width:8px;height:24px;border-radius:4px;background:${item.score <=40 ? '#ff4c4c' : item.score <=70 ? '#ffb347' : '#4fff6f'}"></div>
+                    <div style="min-width:160px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escapeHtml(item.pass)}</div>
+                    <div class="small">${item.label}</div></div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <div class="small">${new Date(item.time).toLocaleString()}</div>
+                      <button class="icon-btn" title="Use this" onclick="useHistory('${btoa(item.pass)}')">↩️</button>
+                    </div>`;
+    historyDiv.appendChild(el);
+  }
+}
+function useHistory(b64){ try{ const p = atob(b64); passwordInput.value = p; runAnalysis(p, {store:false}); }catch(e){} }
+
+/* ============================
+   Attempt server analyze, fallback to local
+   ============================ */
+let lastRequestId = 0;
+function runAnalysis(pass, opts={store:true}){
+  // Quick local analysis first for snappy UI
+  const local = analyzeLocal(pass);
+  updateUIFromAnalysis(local, opts.store ? pass : false);
+
+  // If there's a local server (http://localhost:5000/analyze), try it and override results if available
+  // We'll try but don't block — if it fails we keep local results.
+  const reqId = ++lastRequestId;
+  fetch('http://localhost:5000/analyze', {
+    method:'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body: 'password=' + encodeURIComponent(pass),
+    signal: (new AbortController()).signal
+  }).then(r => r.json()).then(data => {
+    // expect {strength: "Weak/Moderate/Strong", suggestion: "...", score?: number}
+    if(reqId !== lastRequestId) return;
+    // convert to shape expected
+    let score = typeof data.score === 'number' ? Math.max(0,Math.min(100,Math.round(data.score))) : 
+                data.strength && data.strength.includes('Weak') ? 30 :
+                data.strength && data.strength.includes('Moderate') ? 65 : 95;
+    const suggestions = (typeof data.suggestion === 'string' ? data.suggestion.split('.').map(s=>s.trim()).filter(Boolean) : []);
+    const rules = local.rules; // keep local rules for UI
+    updateUIFromAnalysis({score, strengthText: data.strength || (score>=85?'Strong':score>=60?'Moderate':'Weak'), suggestions, rules}, opts.store ? pass : false);
+  }).catch(()=>{/* ignore, local remains */});
+}
+
+/* ============================
+   UI events
+   ============================ */
+
+passwordInput.addEventListener('input', (e)=>{
+  const p = passwordInput.value;
+  runAnalysis(p, {store:true});
+});
+toggleEye.addEventListener('click', ()=>{
+  if(passwordInput.type === 'password'){ passwordInput.type='text'; toggleEye.textContent='🙈'; }
+  else { passwordInput.type='password'; toggleEye.textContent='👁️'; }
+});
+
+// Copy to clipboard
+copyBtn.addEventListener('click', async ()=>{
+  const val = passwordInput.value;
+  if(!val) {
+    // subtle nudge
+    inputTooltip.textContent = "There's nothing to copy — generate one!";
+    setTimeout(()=> inputTooltip.textContent = "Tip: Press generator to create a strong password",2500);
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(val);
+    copyBtn.textContent = 'Copied ✓';
+    setTimeout(()=> copyBtn.textContent = 'Copy',1200);
+    beep(880,0.08,'sine',0.06);
+  }catch(e){
+    copyBtn.textContent = 'Copy (fail)';
+    setTimeout(()=> copyBtn.textContent = 'Copy',1200);
+  }
+});
+
+// Generate password
+generateBtn.addEventListener('click', ()=>{
+  const pw = generatePassword({length:14, useUpper:true, useLower:true, useNumbers:true, useSymbols:true});
+  passwordInput.value = pw;
+  runAnalysis(pw, {store:true});
+  // quick flash
+  generateBtn.textContent = 'Generated';
+  setTimeout(()=> generateBtn.textContent = 'Generate',900);
+});
+
+// Sound toggle
+soundToggle.addEventListener('click', ()=>{
+  soundOn = !soundOn;
+  soundToggle.textContent = soundOn ? '🔊 Sound: On' : '🔇 Sound: Off';
+});
+
+// clear history
+clearHistoryBtn.addEventListener('click', ()=>{ clearHistory(); beep(240,0.08,'sine',0.06); });
+
+// help button
+helpBtn.addEventListener('click', ()=>{
+  alert('Password Analyzer\n\n- Generate strong passwords\n- Copy to clipboard\n- Live rules and suggestions\n- History stored locally (last 5 shown)\n\nTip: Use a password manager to store long unique passwords.');
+});
+
+/* theme toggle (keeps colorful gradient but allows "soft" or "high-contrast" toggle) */
+let themeState = 'colorful';
+themeToggle.addEventListener('click', ()=>{
+  if(themeState === 'colorful'){
+    // soft glass
+    document.documentElement.style.setProperty('--bg1','#f2f4ff');
+    document.documentElement.style.setProperty('--bg2','#dcedff');
+    document.documentElement.style.setProperty('--bg3','#ffe6f0');
+    document.documentElement.style.setProperty('--bg4','#fff7e6');
+    themeIcon.textContent = '🌤️';
+    themeState = 'soft';
+  } else {
+    document.documentElement.style.setProperty('--bg1','#ff6ec7');
+    document.documentElement.style.setProperty('--bg2','#6a82fb');
+    document.documentElement.style.setProperty('--bg3','#fc5c7d');
+    document.documentElement.style.setProperty('--bg4','#12c2e9');
+    themeIcon.textContent = '🌈';
+    themeState = 'colorful';
+  }
+});
+
+/* escape html helper */
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* render initial history and run blank analysis */
+renderHistory();
+runAnalysis('', {store:false});
+
+/* useHistory exposed for inline HTML onclick */
+window.useHistory = useHistory;
+
+/* ============================
+   Small accessibility niceties
+   ============================ */
+passwordInput.addEventListener('focus', ()=> inputTooltip.style.opacity = 1);
+passwordInput.addEventListener('blur', ()=> inputTooltip.style.opacity = 0.9);
+
+/* ============================
+   End of script
+   ============================ */
+</script>
+</body>
+</html>
