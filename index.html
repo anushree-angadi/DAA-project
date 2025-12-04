@@ -617,6 +617,11 @@ function analyzeLocal(pass) {
   if(!rules.unique) score -= 20;
   score = Math.max(0, Math.min(100, Math.round(score)));
 
+if (rules.length && rules.upper && rules.lower && rules.number && rules.symbol && rules.unique) {
+    score = 100; // perfect password gets 100%
+}
+
+
   // Strength text
   let strengthText = score >= 85 ? "Strong" : score >= 60 ? "Moderate" : "Weak";
 
