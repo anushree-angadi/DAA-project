@@ -175,20 +175,21 @@ input[type="password"]:focus, input[type="text"]:focus{
 
 /* tooltip small */
 .tooltip {
-  position:absolute;
-  left:80%;       /* Moves tooltip to the right of the textbox */
-top:110%;        
-transform: translateY(-50%);
-
+  position: absolute;
+  left: 0;              /* aligned with input box */
+  top: 105%;            /* places tooltip BELOW the textbox */
+  white-space: nowrap;  /* keeps text in ONE line */
+  
   background: rgba(0,0,0,0.5);
-  color:var(--accent);
-  padding:6px 10px;
-  border-radius:8px;
-  font-size:12px;
-  display:flex;
-  gap:8px;
-  align-items:center;
+  color: var(--accent);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
+
 
 /* eye toggle and mini buttons */
 .icon-btn{
