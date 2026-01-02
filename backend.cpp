@@ -1,14 +1,15 @@
 #include <iostream>
-#include <regex>
 #include <map>
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <regex>
 #include "httplib.h"
+
 using namespace std;
 
-// ---------- Trie Node for Weak Pattern Detection ----------
+// ---------- TRIE IMPLEMENTATION ----------
 struct TrieNode {
     map<char, TrieNode*> children;
     bool endOfWord = false;
@@ -19,137 +20,156 @@ public:
     TrieNode* root;
     Trie() { root = new TrieNode(); }
 
-    void insert(string word) {
-        TrieNode* current = root;
+    void insert(const string& word) {
+        TrieNode* curr = root;
         for (char c : word) {
-            if (!current->children[c])
-                current->children[c] = new TrieNode();
-            current = current->children[c];
+            if (!curr->children[c])
+                curr->children[c] = new TrieNode();
+            curr = curr->children[c];
         }
-        current->endOfWord = true;
+        curr->endOfWord = true;
     }
 
-    bool search(string word) {
-        TrieNode* current = root;
+    bool search(const string& word) {
+        TrieNode* curr = root;
         for (char c : word) {
-            if (!current->children[c]) return false;
-            current = current->children[c];
+            if (!curr->children[c]) return false;
+            curr = curr->children[c];
         }
-        return current->endOfWord;
+        return curr->endOfWord;
     }
 };
 
-// ---------- Build Weak Pattern Trie ----------
-Trie buildWeakPatternTrie() {
+// ---------- BUILD WEAK PATTERN TRIE ----------
+Trie buildWeakTrie() {
     Trie t;
-    vector<string> weak = {"1234", "password", "admin", "aaaa", "qwerty"};
-    for (string w : weak) t.insert(w);
+    vector<string> weak = {"1234", "password", "admin", "qwerty", "aaaa"};
+    for (auto &w : weak)
+        t.insert(w);
     return t;
 }
 
-// ---------- Password Strength Analyzer ----------
-map<string, string> analyzePassword(string pass) {
-    Trie trie = buildWeakPatternTrie();
+// ---------- KMP STRING MATCHING ----------
+vector<int> buildLPS(const string& pat) {
+    vector<int> lps(pat.size(), 0);
+    for (int i = 1, len = 0; i < pat.size(); ) {
+        if (pat[i] == pat[len])
+            lps[i++] = ++len;
+        else if (len)
+            len = lps[len - 1];
+        else
+            lps[i++] = 0;
+    }
+    return lps;
+}
+
+bool KMPSearch(const string& text, const string& pat) {
+    vector<int> lps = buildLPS(pat);
+    for (int i = 0, j = 0; i < text.size(); ) {
+        if (text[i] == pat[j]) {
+            i++; j++;
+            if (j == pat.size()) return true;
+        } else if (j) {
+            j = lps[j - 1];
+        } else {
+            i++;
+        }
+    }
+    return false;
+}
+
+// ---------- BRUTE FORCE STRING MATCHING ----------
+bool bruteForceMatch(const string& text, const string& pat) {
+    for (int i = 0; i <= text.size() - pat.size(); i++) {
+        int j = 0;
+        while (j < pat.size() && text[i + j] == pat[j])
+            j++;
+        if (j == pat.size()) return true;
+    }
+    return false;
+}
+
+// ---------- GREEDY PASSWORD ANALYZER ----------
+map<string, string> analyzePassword(const string& pass) {
+    Trie trie = buildWeakTrie();
     int score = 0;
     string suggestion = "";
 
-    // Check length
+    // Length check
     if (pass.length() >= 12) score += 2;
     else if (pass.length() >= 8) score += 1;
     else suggestion += "Use at least 8 characters. ";
 
-    // Character variety
     bool up=false, low=false, dig=false, sym=false;
-    for(char c : pass) {
-        if(isupper(c)) up = true;
-        if(islower(c)) low = true;
-        if(isdigit(c)) dig = true;
-        if(!isalnum(c)) sym = true;
+    for (char c : pass) {
+        if (isupper(c)) up = true;
+        if (islower(c)) low = true;
+        if (isdigit(c)) dig = true;
+        if (!isalnum(c)) sym = true;
     }
-    if(up) score++;
-    else suggestion += "Add uppercase letters. ";
 
-    if(low) score++;
-    else suggestion += "Add lowercase letters. ";
+    if (up) score++; else suggestion += "Add uppercase letters. ";
+    if (low) score++; else suggestion += "Add lowercase letters. ";
+    if (dig) score++; else suggestion += "Add digits. ";
+    if (sym) score++; else suggestion += "Add symbols. ";
 
-    if(dig) score++;
-    else suggestion += "Add numbers. ";
-
-    if(sym) score++;
-    else suggestion += "Add symbols (#, @, !). ";
-
-    // Repeated patterns
+    // Regex repetition check
     regex repeat("(.)\\1{2,}");
-    if (regex_search(pass, repeat)) {
-        suggestion += "Avoid repeating characters. ";
-    } else score++;
+    if (!regex_search(pass, repeat)) score++;
+    else suggestion += "Avoid repeated characters. ";
 
-    // Weak pattern detection using Trie
-    bool hasWeakPattern = false;
-    for (size_t i = 0; i < pass.size(); i++) {
-        for (int len = 4; len <= 8 && i + len <= pass.size(); len++) {
-            string sub = pass.substr(i, len);
-            transform(sub.begin(), sub.end(), sub.begin(), ::tolower);
-            if (trie.search(sub)) {
-                hasWeakPattern = true;
-                break;
-            }
+    // ---------- STRING MATCHING CHECKS ----------
+    vector<string> weakPatterns = {"1234", "password", "admin", "qwerty"};
+
+    bool weakFound = false;
+    for (auto &w : weakPatterns) {
+        if (
+            trie.search(w) && 
+            (KMPSearch(pass, w) || bruteForceMatch(pass, w))
+        ) {
+            weakFound = true;
+            break;
         }
-        if (hasWeakPattern) break;
     }
-    
-    if (hasWeakPattern) {
-        suggestion += "Remove common weak patterns like '1234'. ";
-    } else {
+
+    if (weakFound)
+        suggestion += "Remove common weak patterns. ";
+    else
         score++;
-    }
 
     string strength;
     if (score <= 3) strength = "Weak";
     else if (score <= 6) strength = "Moderate";
     else strength = "Strong";
 
-    // Escape quotes in suggestion for JSON
-    string escaped_suggestion = "";
-    for (char c : suggestion) {
-        if (c == '"') escaped_suggestion += "\\\"";
-        else if (c == '\\') escaped_suggestion += "\\\\";
-        else escaped_suggestion += c;
-    }
-
     return {
         {"strength", strength},
-        {"suggestion", escaped_suggestion}
+        {"suggestion", suggestion}
     };
 }
 
-// ---------- HTTP API ----------
+// ---------- HTTP SERVER ----------
 int main() {
     httplib::Server server;
 
-    // Enable CORS and set default headers
     server.set_default_headers({
         {"Access-Control-Allow-Origin", "*"},
-        {"Access-Control-Allow-Methods", "GET, POST, OPTIONS"},
+        {"Access-Control-Allow-Methods", "POST, OPTIONS"},
         {"Access-Control-Allow-Headers", "Content-Type"}
     });
 
-    // Handle OPTIONS requests for CORS preflight
-    server.Options("/analyze", [](const httplib::Request& req, httplib::Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type");
+    server.Options("/analyze", [](const httplib::Request&, httplib::Response& res) {
         res.status = 200;
-
     });
 
     server.Post("/analyze", [](const httplib::Request& req, httplib::Response& res) {
         string password = req.get_param_value("password");
 
-        // Input validation
         if (password.empty()) {
-            string json = "{ \"strength\": \"N/A\", \"suggestion\": \"Please enter a password.\" }";
-            res.set_content(json, "application/json");
+            res.set_content(
+                "{ \"strength\": \"N/A\", \"suggestion\": \"Enter a password.\" }",
+                "application/json"
+            );
             return;
         }
 
@@ -163,5 +183,4 @@ int main() {
 
     cout << "Server running on http://localhost:5000\n";
     server.listen("0.0.0.0", 5000);
-    return 0;
 }
