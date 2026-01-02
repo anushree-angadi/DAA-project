@@ -378,7 +378,12 @@ circle.fg{ fill:none; stroke-width:16; stroke-linecap:round; transition: stroke-
       <!-- Input and actions -->
       <div class="input-row" id="inputRow">
         <div class="input" style="flex:1;position:relative;">
-          <input id="password" type="password" aria-label="Password field" placeholder="Type your password or generate one">
+          <input id="password"
+       type="password"
+       aria-label="Password field"
+       placeholder="Type your password or generate one"
+       minlength="6"
+       maxlength="8">
           <div class="tooltip" id="inputTooltip">Tip: Press generator to create a strong password</div>
           <button class="icon-btn" id="toggleEye" title="Show/Hide password">👁️</button>
         </div>
