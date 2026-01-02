@@ -382,8 +382,8 @@ circle.fg{ fill:none; stroke-width:16; stroke-linecap:round; transition: stroke-
        type="password"
        aria-label="Password field"
        placeholder="Type your password or generate one"
-       minlength="6"
-       maxlength="8">
+       minlength="8"
+       maxlength="12">
           <div class="tooltip" id="inputTooltip">Tip: Press generator to create a strong password</div>
           <button class="icon-btn" id="toggleEye" title="Show/Hide password">👁️</button>
         </div>
@@ -396,7 +396,7 @@ circle.fg{ fill:none; stroke-width:16; stroke-linecap:round; transition: stroke-
 
       <!-- Rules checklist -->
       <div class="rules" id="rules">
-        <div class="rule fail" id="r-length">● Min 6 chars</div>
+        <div class="rule fail" id="r-length">● Min 8 chars</div>
         <div class="rule fail" id="r-upper">● Uppercase letter</div>
         <div class="rule fail" id="r-lower">● Lowercase letter</div>
         <div class="rule fail" id="r-number">● Number</div>
@@ -545,7 +545,7 @@ drawParticles();
    Tips rotation
    ============================ */
 const tips = [
-  "Use at least 6 characters for better safety.",
+  "Use at least 8 characters for better safety.",
   "Mix uppercase, lowercase, numbers and symbols.",
   "Avoid common patterns and repeated sequences.",
   "Use a unique password for every important account.",
@@ -567,7 +567,7 @@ rotateTip();
 /* ============================
    Password generation
    ============================ */
-function generatePassword(opts = {length: 8, useUpper:true, useLower:true, useNumbers:true, useSymbols:true}) {
+function generatePassword(opts = {length: 12, useUpper:true, useLower:true, useNumbers:true, useSymbols:true}) {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lower = "abcdefghijklmnopqrstuvwxyz";
   const nums = "0123456789";
@@ -637,7 +637,7 @@ if (rules.length && rules.upper && rules.lower && rules.number && rules.symbol &
   let strengthText = score >= 85 ? "Strong" : score >= 60 ? "Moderate" : "Weak";
 
   // Suggestions generation
-if(!rules.length) suggestions.push("Make it at least 6 characters.");
+if(!rules.length) suggestions.push("Make it at least 8 characters.");
   if(!rules.upper) suggestions.push("Add uppercase letters (A-Z).");
   if(!rules.lower) suggestions.push("Add lowercase letters (a-z).");
   if(!rules.number) suggestions.push("Include numbers (0-9).");
@@ -676,7 +676,7 @@ function updateUIFromAnalysis(res, plainPass){
   bigEmoji.textContent = em;
 
   // rules UI
-  rulesEls.length.className = 'rule ' + (res.rules.length ? 'pass' : 'fail'); rulesEls.length.textContent = (res.rules.length ? '✔ Min 6 chars' : '● Min 6 chars');
+  rulesEls.length.className = 'rule ' + (res.rules.length ? 'pass' : 'fail'); rulesEls.length.textContent = (res.rules.length ? '✔ Min 8 chars' : '● Min 8 chars');
   rulesEls.upper.className = 'rule ' + (res.rules.upper ? 'pass' : 'fail'); rulesEls.upper.textContent = (res.rules.upper ? '✔ Uppercase letter' : '● Uppercase letter');
   rulesEls.lower.className = 'rule ' + (res.rules.lower ? 'pass' : 'fail'); rulesEls.lower.textContent = (res.rules.lower ? '✔ Lowercase letter' : '● Lowercase letter');
   rulesEls.number.className = 'rule ' + (res.rules.number ? 'pass' : 'fail'); rulesEls.number.textContent = (res.rules.number ? '✔ Number' : '● Number');
