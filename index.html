@@ -152,18 +152,14 @@ html,body{
 }
 
 /* input row */
-.input-row{ position:relative; display:flex; gap:10px; align-items:center; }
+.input-row{ position:relative; display:flex; gap:10px; align-items:flex-end; }
 .input {
   flex:1;
   position:relative;
 }
 input[type="password"], input[type="text"]{
-  
-  input::placeholder {
-  color: #1a1313a8;
-}
-width:100%;
-  padding:14px 46px 14px 14px;
+  width:100%;
+  padding:14px 56px 14px 14px;
   background: rgba(86, 73, 73, 0.26);
   border:1px solid rgba(54, 170, 202, 0.04);
   color:var(--accent);
@@ -180,7 +176,7 @@ input[type="password"]:focus, input[type="text"]:focus{
 /* tooltip small */
 .tooltip {
   position: absolute;
-  left: 15;              /* aligned with input box */
+  left: 15px;              /* aligned with input box */
   top: 90%;            /* places tooltip BELOW the textbox */
   white-space: nowrap;  /* keeps text in ONE line */
   
@@ -208,6 +204,15 @@ input[type="password"]:focus, input[type="text"]:focus{
   font-size:18px;
 }
 .icon-btn:hover{ transform:translateY(-2px) }
+/* place eye button inside password input (right side) */
+.input > .icon-btn{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
+  background: rgba(255,255,255,0.03);
+}
 
 /* action buttons */
 .actions{
