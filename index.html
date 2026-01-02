@@ -391,7 +391,7 @@ circle.fg{ fill:none; stroke-width:16; stroke-linecap:round; transition: stroke-
 
       <!-- Rules checklist -->
       <div class="rules" id="rules">
-        <div class="rule fail" id="r-length">● Min 10 chars</div>
+        <div class="rule fail" id="r-length">● Min 6 chars</div>
         <div class="rule fail" id="r-upper">● Uppercase letter</div>
         <div class="rule fail" id="r-lower">● Lowercase letter</div>
         <div class="rule fail" id="r-number">● Number</div>
@@ -540,7 +540,7 @@ drawParticles();
    Tips rotation
    ============================ */
 const tips = [
-  "Use at least 12 characters for better safety.",
+  "Use at least 6 characters for better safety.",
   "Mix uppercase, lowercase, numbers and symbols.",
   "Avoid common patterns and repeated sequences.",
   "Use a unique password for every important account.",
@@ -562,7 +562,7 @@ rotateTip();
 /* ============================
    Password generation
    ============================ */
-function generatePassword(opts = {length: 14, useUpper:true, useLower:true, useNumbers:true, useSymbols:true}) {
+function generatePassword(opts = {length: 8, useUpper:true, useLower:true, useNumbers:true, useSymbols:true}) {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lower = "abcdefghijklmnopqrstuvwxyz";
   const nums = "0123456789";
@@ -600,7 +600,7 @@ function generatePassword(opts = {length: 14, useUpper:true, useLower:true, useN
 function analyzeLocal(pass) {
   const suggestions = [];
   const rules = {
-    length: pass.length >= 10,
+    length: pass.length >= 6,
     upper: /[A-Z]/.test(pass),
     lower: /[a-z]/.test(pass),
     number: /[0-9]/.test(pass),
@@ -632,7 +632,7 @@ if (rules.length && rules.upper && rules.lower && rules.number && rules.symbol &
   let strengthText = score >= 85 ? "Strong" : score >= 60 ? "Moderate" : "Weak";
 
   // Suggestions generation
-  if(!rules.length) suggestions.push("Make it at least 10 characters (12+ recommended).");
+if(!rules.length) suggestions.push("Make it at least 6 characters.");
   if(!rules.upper) suggestions.push("Add uppercase letters (A-Z).");
   if(!rules.lower) suggestions.push("Add lowercase letters (a-z).");
   if(!rules.number) suggestions.push("Include numbers (0-9).");
@@ -671,7 +671,7 @@ function updateUIFromAnalysis(res, plainPass){
   bigEmoji.textContent = em;
 
   // rules UI
-  rulesEls.length.className = 'rule ' + (res.rules.length ? 'pass' : 'fail'); rulesEls.length.textContent = (res.rules.length ? '✔ Min 10 chars' : '● Min 10 chars');
+  rulesEls.length.className = 'rule ' + (res.rules.length ? 'pass' : 'fail'); rulesEls.length.textContent = (res.rules.length ? '✔ Min 6 chars' : '● Min 6 chars');
   rulesEls.upper.className = 'rule ' + (res.rules.upper ? 'pass' : 'fail'); rulesEls.upper.textContent = (res.rules.upper ? '✔ Uppercase letter' : '● Uppercase letter');
   rulesEls.lower.className = 'rule ' + (res.rules.lower ? 'pass' : 'fail'); rulesEls.lower.textContent = (res.rules.lower ? '✔ Lowercase letter' : '● Lowercase letter');
   rulesEls.number.className = 'rule ' + (res.rules.number ? 'pass' : 'fail'); rulesEls.number.textContent = (res.rules.number ? '✔ Number' : '● Number');
@@ -820,7 +820,7 @@ copyBtn.addEventListener('click', async ()=>{
 
 // Generate password
 generateBtn.addEventListener('click', ()=>{
-  const pw = generatePassword({length:14, useUpper:true, useLower:true, useNumbers:true, useSymbols:true});
+  const pw = generatePassword({length:8, useUpper:true, useLower:true, useNumbers:true, useSymbols:true});
   passwordInput.value = pw;
   runAnalysis(pw, {store:true});
   // quick flash
